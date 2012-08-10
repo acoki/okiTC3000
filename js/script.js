@@ -20,7 +20,7 @@ function init() {
 
     var streetMapLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://gis.oki.org/ArcGIS/rest/services/Maps/okibasemap_minimal/MapServer");
     map.addLayer(streetMapLayer);
-    
+	
 	//Create Find Task using the URL of the map service to search
     findTask = new esri.tasks.FindTask("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/");
 
@@ -47,7 +47,7 @@ function showResults(results) {
     //This function works with an array of FindResult that the task returns
     map.graphics.clear();
     //var symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([98, 194, 204]), 2), new dojo.Color([98, 194, 204, 0.5]));
-	var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_SQUARE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,0,0]), 1), new dojo.Color([0,255,0,0.25]));
+	var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_SQUARE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1), new dojo.Color([0, 255, 0, 0.25]));
 
     //create array of attributes
     var items = dojo.map(results, function (result) {
@@ -82,12 +82,11 @@ function onRowClickHandler(evt) {
 
     dojo.forEach(map.graphics.graphics, function (graphic) {
         if ((graphic.attributes) && graphic.attributes.OBJECTID === clickedTrafficCountId) {
-            selectedTrafficCount = graphic.geometery.expand(10);
+            selectedTrafficCount = graphic;
             return;
         }
     });
-    var TrafficCountExtent = selectedTrafficCount.geometry.getExtent();
-    map.setExtent(TrafficCountExtent);
+    map.centerAndZoom(selectedTrafficCount.geometry, 24);
 }
 
 dojo.addOnLoad(init);
