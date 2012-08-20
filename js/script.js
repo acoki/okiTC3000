@@ -5,22 +5,60 @@ dojo.require("esri.tasks.find");
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.form.Button");
+dojo.require("esri.dijit.Popup");
+dojo.require("esri.layers.FeatureLayer");
 
 
 var findTask, findParams;
 var map, startExtent;
 var grid, store;
+var identifyTask,identifyParams;
 
 function init() {
     dojo.connect(grid, "onRowClick", onRowClickHandler);
 
     //Create map and add the ArcGIS Online imagery layer
     startExtent = new esri.geometry.Extent({ "xmin": -9459781, "ymin": 4748484, "xmax": -9382885, "ymax": 4770727, "spatialReference": { "wkid": 102113 } });
-    map = new esri.Map("map", { extent: startExtent });
+    //define custom popup options
+    var popupOptions = {
+      'markerSymbol': new esri.symbol.SimpleMarkerSymbol('circle', 32, null, new dojo.Color([0, 0, 0, 0.25]))
+      // 'marginLeft': '1',
+      // 'marginTop': '1'
+    };
+    //create a popup to replace the map's info window
+    var popup = new esri.dijit.Popup(popupOptions, dojo.create("div"));
+    //I Can Haz Map!
+    map = new esri.Map("map", { extent: startExtent, infoWindow: popup });
 
     var streetMapLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://gis.oki.org/ArcGIS/rest/services/Maps/okibasemap_minimal/MapServer");
-    map.addLayer(streetMapLayer);
+    
+    //map.addLayer(streetMapLayer);
 	
+    //define a popup template
+    var popupTemplate = new esri.dijit.PopupTemplate({
+        title: "{address}",
+        fieldInfos: [
+        {fieldName: "Main_Stree", visible: true, label:"Main Street"},
+        {fieldName: "Cross_Stre", visible:true, label:"Cross Street"},
+        {fieldName: "AADT", visible: true, label:"AADT"},
+        {fieldName: "CountYear", visible: true, label:"Year"}
+        ],
+        showAttachments:true
+    });
+    //create a feature layer based on the feature collection
+    var featureLayer = new esri.layers.FeatureLayer("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/0", {
+        mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
+        infoTemplate: popupTemplate,
+        outFields: ['Main_Stree','Cross_Stre','AADT','CountYear']
+    });
+    // featureLayer.setDefinitionExpression("Main_Stree != ''");
+    dojo.connect(featureLayer,"onClick",function(evt){
+        map.infoWindow.setFeatures([evt.graphic]);
+    });
+     
+     
+    map.addLayers([streetMapLayer, featureLayer]);
+
 	//Create Find Task using the URL of the map service to search
     findTask = new esri.tasks.FindTask("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/");
 
@@ -46,8 +84,7 @@ function doFind() {
 function showResults(results) {
     //This function works with an array of FindResult that the task returns
     map.graphics.clear();
-    //var symbol = new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([98, 194, 204]), 2), new dojo.Color([98, 194, 204, 0.5]));
-	var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_SQUARE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1), new dojo.Color([0, 255, 0, 0.25]));
+	var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1), new dojo.Color([0, 255, 0, 0.25]));
 
     //create array of attributes
     var items = dojo.map(results, function (result) {
@@ -86,7 +123,8 @@ function onRowClickHandler(evt) {
             return;
         }
     });
-    map.centerAndZoom(selectedTrafficCount.geometry, 24);
+    map.centerAndZoom(selectedTrafficCount.geometry, 5);
 }
 
 dojo.addOnLoad(init);
+
