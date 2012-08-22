@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>  
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9" />
+    <!--The viewport meta tag is used to improve the presentation and behavior of the
+    samples on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>
+      San Francisco
+    </title>
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/dojo/dijit/themes/claro/claro.css"/>
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/esri/dijit/css/Popup.css"/>
+    <style>
+      html, body { height: 100%; width: 100%; margin: 0; padding: 0; } .esriScalebar{
+      padding: 20px 20px; } #map{ padding:0;}
+    </style>
+    <script type="text/javascript">
+      var dojoConfig = {
+        parseOnLoad: true
+      };
+    </script>
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.1">
+    </script>
+    <script type="text/javascript">
+      dojo.require("dijit.layout.BorderContainer");
+      dojo.require("dijit.layout.ContentPane");
+      dojo.require("esri.map");
+      dojo.require("esri.layers.FeatureLayer");
+      dojo.require("esri.dijit.Popup");
+
+
+      var map;
+
+      function init() {
+        esri.config.defaults.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
+
+        //setup the map's initial extent (World View)
+        var initExtent = new esri.geometry.Extent({
+              "xmin":-13631589,
+              "ymin":4549150,
+              "xmax":-13630075,
+              "ymax":4549635,
+              "spatialReference":{"wkid":102100}
+            });
+         
+        //define custom popup options
+        var popupOptions = {
+          'markerSymbol': new esri.symbol.SimpleMarkerSymbol('circle', 32, null, new dojo.Color([0, 0, 0, 0.25])),
+          'marginLeft': '20', 
+          'marginTop': '20'
+        };
+        //create a popup to replace the map's info window
+        var popup = new esri.dijit.Popup(popupOptions, dojo.create("div"));
+        
+        map = new esri.Map("map", {
+          extent: initExtent,
+          infoWindow: popup
+        });
+
+
+        //Add the topographic layer to the map. View the ArcGIS Online site for services http://arcgisonline/home/search.html?t=content&f=typekeywords:service    
+        var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
+        map.addLayer(basemap);
+        
+        
+        //define a popup template
+        var popupTemplate = new esri.dijit.PopupTemplate({
+          title: "{address}",
+          fieldInfos: [
+          {fieldName: "req_type", visible: true, label:"Type"},
+          {fieldName: "req_date", visible:true, label:"Date" ,format:{dateFormat:'shortDateShortTime'}}
+          ],
+          showAttachments:true
+        });
+  
+        //create a feature layer based on the feature collection
+        var featureLayer = new esri.layers.FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/MapServer/0", {
+          mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
+          infoTemplate: popupTemplate,
+          outFields: ['req_date','address']
+        });
+        featureLayer.setDefinitionExpression("address != ''");
+        
+        dojo.connect(featureLayer,"onClick",function(evt){
+           map.infoWindow.setFeatures([evt.graphic]);
+        });
+        
+        
+        map.addLayer(featureLayer);
+        
+     
+        dojo.connect(map, 'onLoad', function(theMap) {
+          //resize the map when the browser resizes
+          dojo.connect(dijit.byId('map'), 'resize', map,map.resize);
+        });
+      }
+
+      dojo.ready(init);
+    </script>
+  </head>
+  <body class="claro">
+    <div data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'"
+    style="width: 100%; height: 100%; margin: 0;">
+      <div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'"
+      style="border:1px solid #000;padding:0;">
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html> 
+<html> 
+  <head> 
+  <title>oki</title> 
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+  <link rel="stylesheet" href="tc.css" />
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
+  
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/esri/dijit/css/Popup.css"/>
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/dojo/dijit/themes/claro/claro.css">
+  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+  <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.1compact"></script>
+  <script type="text/javascript" src="app.js"></script>
+  <script type="text/javascript">
+      dojoConfig = {
+        parseOnLoad:true
+      }
+    </script>
+</head>
+  
+  <body onorientationchange="orientationChanged();">
+
+    <div data-role="page" id="mapPage" class="page-map">
+      <div id="header" data-role="header">
+        <h1><span id="webmapTitle">OKI Traffic Count</span></h1>
+        <a id="geolocate" data-icon="custom" href="#" onclick="getLocation();" class="ui-btn-left" data-iconpos="notext" title="Locate"></a>
+        <a id="info" data-icon="gear" href="#" data-rel="dialog" class="ui-btn-right" data-iconpos="notext"></a>
+      </div>
+      <div data-role="content" id="mapcontent">
+        <div id="map"></div>
+      </div>
+      <!--Navbar-->
+      <div id="footer" data-role="footer">
+        <div data-role="navbar" class="customIcons">
+          <ul>
+            <li>
+              <a id="legend" data-icon="custom"  href="#legendDialog" data-rel="dialog">Legend</a>
+              <!-- <a id="layers" data-icon="custom"  href="#layerDialog" data-rel="page">Layers</a> -->
+            </li>
+            <li>
+              <!-- <a id="legend" data-icon="custom"  href="#legendDialog" data-rel="dialog">Legend</a> -->
+            </li>
+            <li>
+              <!-- <a id="details" data-icon="custom"  href="#detailDialog" data-rel="page">Basemap</a> -->
+            </li>
+            <li>
+              <a id="searchMap" data-icon="custom" href="#searchDialog" data-rel="dialog">Search</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!--Search Dialog-->
+    <div id="searchDialog" data-role="dialog">
+      <div data-role="header">
+        <h1><span>Search</span></h1>
+      </div>
+      <div data-role="content">
+        <div data-role="fieldcontain">
+          <label for="search">
+            Search location:
+          </label>
+          <input type="search" onKeyDown="if(event.keyCode === 13)findLocation();" id="search"
+          value="" />
+        </div>
+        <ul id="searchList" data-role="listview">
+        </ul>
+      </div>
+    </div>
+
+    <!--Legend Dialog-->
+    <div id="legendDialog" data-role="dialog">
+      <div data-role="header">
+        <h1><span>Legend</span></h1>
+      </div>
+      <div data-role="content">
+        <div id="legendDiv"><ul id="legendList"></ul></div>
+      </div>
+    </div>
+
+    <!--Map Details Dialog-->
+    <div id="infoDialog" data-role="dialog">
+      <div data-role="header">
+        <h1>
+          <span id="webmapTitleInfo">
+          </span>
+        </h1>
+      </div>
+      <div data-role="content">
+        <div id="contentDiv">
+          <div id="mapDetails">
+            <div id="snippet">
+            </div>
+            <div id="description">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
+

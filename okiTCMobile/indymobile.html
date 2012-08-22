@@ -1,0 +1,1336 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>IndianaMap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.min.css" />
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/2.8/js/esri/dijit/css/Gallery.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/2.8/js/esri/dijit/css/Popup.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/2.8/js/esri/dijit/css/PopupMobile.css">
+    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.min.js"></script>
+    <style type="text/css">
+     @-webkit-keyframes
+         pulse
+        {
+          0%
+          {
+            opacity: 1.0;
+            -webkit-transform: scale(1.25);
+
+          }
+          45%
+          {
+            opacity: .20;
+            -webkit-transform: scale(.80);
+
+          }
+          100%
+          {
+            opacity: 1.0;
+            -webkit-transform: scale(1.25);
+
+          }
+        }
+
+      #map_graphics_layer {
+        -webkit-animation-duration:3s;
+        -webkit-animation-iteration-count:infinite;
+        -webkit-animation-name:pulse;
+        -webkit-animation-timing-function:ease-in-out;
+      }
+
+      .page-map,#mapcontent.ui-content {
+        width:100%;
+        padding:0;
+        overflow:hidden;
+      }
+
+      #map {
+        height:100%;
+        width:100%;
+        overflow:hidden;
+      }
+
+      #mapDetails {
+        font-size:12px;
+        color:#024672;
+      }
+
+      #CurrentLayers { 
+        display:none; 
+      }
+
+      #snippet {
+        color:#004267;
+        font-size:16px;
+        font-weight:600;
+      }
+
+      .esriMobileNavigationBar {
+        background: -moz-linear-gradient(top, #45484d 0%, #000000 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#45484d), color-stop(100%,#000000)); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, #45484d 0%,#000000 100%); /* Chrome10+,Safari5.1+ */
+        background: -ms-linear-gradient(top, #45484d 0%,#000000 100%); /* IE10+ */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#45484d', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+        background: linear-gradient(top, #45484d 0%,#000000 100%); /* W3C */
+      }
+
+      .esriPopupMobile .titlePane {
+        background: rgba(69, 72, 77, 1); 
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#0A4D6A',endColorstr='#639BBC');
+        -ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr='#0A4D6A',\A       endColorstr='#639BBC')";
+      }
+
+      .esriPopupMobile .pointer.top {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/pointertop.png) 
+      }
+
+      .esriPopupMobile .pointer.bottom{
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/pointerbottom.png) ;
+      }
+
+      .customIcons .ui-btn .ui-btn-inner {
+        padding-top:40px!important;
+      }
+
+      .customIcons .ui-btn .ui-icon {
+        width:32px!important;
+        height:32px!important;
+        margin-left:-15px!important;
+        box-shadow:none!important;
+        -moz-box-shadow:none!important;
+        -webkit-box-shadow:none!important;
+        -webkit-border-radius:none!important;
+        border-radius:none!important;
+      }
+
+      /*
+      #info .ui-icon {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/info.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+      */
+
+      #geolocate .ui-icon {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/geolocate.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+     
+      #layers .ui-icon { 
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/legend.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+
+      #legend .ui-icon {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/mapDetails.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+
+     
+      #details .ui-icon {
+        background:url(http://maps.indiana.edu/images/IndianaMap/BasemapLayer.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+
+      #searchMap  .ui-icon {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/search.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+
+      .esriMobilePopupInfoView {
+        overflow: auto;
+      }
+
+      .map .logo-med { 
+        position:absolute; 
+        right:5px; 
+        bottom:5px; 
+        width:100px; 
+        height:36px; 
+        z-index:49; 
+        background-image:url('http://maps.indiana.edu/images/indianamap/logo-100x36.png') no-repeat; 
+        cursor:pointer; 
+        _background-image:none; 
+      }
+
+      .map .logo-sm { 
+        position:absolute; 
+        right:5px; 
+        bottom:5px; 
+        width:60px; 
+        height:16px; 
+        z-index:49; 
+        background-image:url('http://maps.indiana.edu/images/indianamap/logo-60x16.png') no-repeat; 
+        cursor:pointer; 
+        _background-image:none; 
+      }
+ 
+      .esriSimpleSlider div {
+        height: 30px !important;
+        width: 30px !important;
+      }
+    </style>
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=2.8compact"></script>
+    <script type="text/javascript">
+      dojo.require("esri.map");
+      dojo.require("esri.arcgis.utils");
+      dojo.require("esri.dijit.Legend");
+      dojo.require("esri.layers.FeatureLayer");
+      dojo.require("esri.tasks.locator");
+      dojo.require("esri.tasks.identify"); 
+      dojo.require("esri.dijit.Gallery");
+      dojo.require("esri.dijit.BasemapGallery");
+      dojo.require("esri.dijit.PopupMobile");
+      function logger(err) { 
+        // console.log(err.message); /* Poor IE browsers miss on the console. */ 
+      }
+
+      var map;
+      var locator, currentItem, configurableLayer, configurableLayerOptions, basemaps, geometryService;
+      var arcgisURL = "http://arcgis.com/sharing/content/items/";
+      var bingMapsKey;
+      var urlObject;
+      var popup;
+      var webmap = {}; 
+      webmap.item = {
+	    "title": "IndianaMap",
+	    "snippet": "IndianaMap helps people find commonly used layers and maps for a better understanding of Indiana issues and trends. Quick access to this authoritative geospatial information supports situational awareness and better decision making.",
+	    "extent":[[235308,4180000],[980000,4583385],{"wkid":26916}]  
+      }; 
+      webmap.log = [];
+      webmap.itemData = {"bookmarkItems":[], "operationalLayers":[],
+	                 "baseMap":{"baseMapLayers": [{"url":"http://maps.indiana.edu/ArcGIS/rest/services/Basemaps/Best_Available_Imagery/MapServer","opacity":1,"visibility":true,"type":"Raster","description":"Shaded Relief Basemap, (2006) - A scale-dependent basemap that combines the 2006 digital elevation model with selected transportation and other layers","geometryType":"None"}],"title":"Shaded Relief - Basemaps"}};
+
+      // jquery mobile says no to this. esri sample has it. 
+      dojo.ready(function() { 
+         $(document).ready(jQueryReady);
+      });
+
+
+function jQueryReady() {
+
+
+
+        
+  //initialize the geocoder
+  locator = new esri.tasks.Locator("http://maps.indiana.edu/ArcGIS/rest/services/Utilities/Locator_IN_Composite/GeocodeServer"); 
+  geometryService = new esri.tasks.GeometryService("http://maps.indiana.edu/ArcGIS/rest/services/Utilities/Geometry/GeometryServer");
+  dojo.connect(locator, "onAddressToLocationsComplete", showResults);
+  currentItem = webmap; 
+
+  esri.config.defaults.geometryService = geometryService;
+  esri.config.defaults.io.proxyUrl = "http://maps.indiana.edu/proxy/proxy.ashx";
+  popup = new esri.dijit.Popup({
+      fillSymbol: new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,0,0]), 2), new dojo.Color([255,255,0,0.25]))
+      }, dojo.create("div"));
+
+  timer = setTimeout(function(){ if (!map) { displayError(); }}, 10000);
+        
+  if (webmap.item !== undefined && webmap.item.extent !== undefined) { 
+     startExtent = new esri.geometry.Extent(webmap.item.extent[0][0],
+             webmap.item.extent[0][1],
+             webmap.item.extent[1][0],
+             webmap.item.extent[1][1],
+             new esri.SpatialReference(webmap.item.extent[2])); 
+  } else { 
+     startExtent = new esri.geometry.Extent(386105.3,4155355.6,710312.7,4654126.4,new esri.SpatialReference({wkid:26916}));
+  }
+      
+  map = new esri.Map("map", { extent: startExtent, infoWindow: popup } );
+  if (map.width <= 500) {
+      // different style of popup
+      popup = new esri.dijit.PopupMobile(null, dojo.create("div"));
+      map.setInfoWindow(popup);
+  }
+  initMap(webmap); 
+  dojo.connect(map, 'onClick', executeIdentifyTask);
+  identifyParams = new esri.tasks.IdentifyParameters();
+  identifyParams.tolerance = 8;
+  identifyParams.returnGeometery = true; 
+  identifyParams.layerIds = [0]; 
+  identifyParams.layerOption = esri.tasks.IdentifyParameters.LAYER_OPTION_VISIBLE;
+  identifyParams.width = map.width; 
+  identifyParams.height = map.height; 
+  
+  $("#SeeAllLayers")
+    .live("click", function() { 
+
+
+        if ($(this).text() === 'Current Layers' && 
+            typeof map.layerIds !== "undefined" && 
+            map.layerIds !== null) 
+        { 
+
+           $("#AllLayers").hide();
+           $('#CurrentLayers').empty();
+           var strings = map.layerIds.join(""); 
+           $('.layerListLink')
+               .each(function(index) { 
+                   if (strings.indexOf($(this).attr('data-lyr-id')) !== -1) { 
+                       var li = $('<li />'); 
+
+                       //create the list content
+                       var content = "<a href='#configureDialog' data-rel='dialog' class='layerListLink' data-lyr-id='";
+                       content += $(this).attr('data-lyr-id')+"'>";
+                       content += $(this).text() +"</a>";
+
+                       li.append(content);
+      
+                       // add the list item to the feature type list
+                       $('#CurrentLayers').append(li);
+                   }
+               }); 
+           $('#CurrentLayers').listview().show();
+           $('#CurrentLayers').listview('refresh');  
+   
+        } else { 
+           $('#CurrentLayers').hide(); 
+           $('#AllLayers').listview().show(); 
+           $('#AllLayers').listview('refresh'); 
+
+        }
+    }); 
+ 
+  $(".AddLayer")
+    .live("click", function () { 
+       // Check if layer exists
+       if (typeof map.layerIds !== "undefined" && map.layerIds !== null && map.layerIds.join("").indexOf(configurableLayer) === -1) { 
+          for (var i in map.layerIds) { 
+             if (map.layerIds[i].indexOf(configurableLayer) === -1) { 
+                var ly = "http://maps.indiana.edu/ArcGIS/rest/services/", tokens = configurableLayer.split('_');
+                ly += tokens[0] + '/'; 
+                for (var i = 1; i < tokens.length; i++) { 
+                  ly += tokens[i]; 
+                  if (i === tokens.length - 1) { 
+                    ly += '/MapServer'; 
+                  } else { 
+                    ly += '_'; 
+                  }
+                }
+
+                handleMapServer(ly); 
+                break;
+             } // if 
+         } // for
+      }
+    }); 
+
+  $("#layers")
+    .live("click", function(e) { 
+       map.graphics.clear(); 
+       $("#AllLayers").show(); 
+       $("#CurrentLayers").empty().hide(); 
+    }); 
+
+  $("#basemap_Best_Available_Imagery_Hybrid, #basemap_Best_Available_Imagery, #basemap_Dark_Color_Shaded_Relief, #basemap_Imagery_2005, #basemap_Imagery_Hybrid_2005, #basemap_Light_Color_Shaded_Relief, #basemap_NAIP_2010, #basemap_PLSS, #basemap_Shaded_Relief, #basemap_Topos")
+    .live("click", function (e) { 
+        map.removeLayer(map.getLayer('layer0')); 
+        var layer = new esri.layers.ArcGISTiledMapServiceLayer($(this).attr("data-lyr-url"),{'id':'layer0'});  
+        map.addLayer(layer, 0); 
+    }); 
+
+  $(".InfoForLayer")
+    .live("click", function() { 
+       // We get a url, and make assumption its a mapserver. 
+       var ly = "http://maps.indiana.edu/ArcGIS/rest/services/", tokens = configurableLayer.split('_');
+       ly += tokens[0] + '/'; 
+       for (var i = 1; i < tokens.length; i++) { 
+         ly += tokens[i]; 
+         
+         if (i === tokens.length - 1) { 
+           ly += '/MapServer'; 
+         } else { 
+           ly += '_'; 
+         }
+       }
+
+       esri.request({
+       	 url:ly+'/0',
+       	 content:{f:"json"},
+       	 callbackParamName:"callback",
+       	 load: function(data) {	
+           $("#layerDialogDescription").html(data.description);
+       	 }
+       });   
+    }); 
+
+  $(".layerListLink")
+    .live("click", function() { 
+       configurableLayer = $(this).attr("data-lyr-id");
+       $("#layerDialogDescription").html("");
+    }); 
+  $(".RemoveLayer")
+    .live("click", function() { 
+       // Check if layer exists
+       if (typeof map.layerIds !== "undefined" && map.layerIds !== null && map.layerIds.join("").indexOf(configurableLayer) !== -1) { 
+          for (var i in map.layerIds) { 
+             if (map.layerIds[i].indexOf(configurableLayer) !== -1) { 
+                map.removeLayer(map.getLayer(map.layerIds[i]));
+             }
+          }
+       }
+    }); 
+  $(".MoveLayerUp")
+    .live("click", function() { 
+       // Check if layer exists
+       if (typeof map.layerIds !== "undefined" && map.layerIds !== null && map.layerIds.join("").indexOf(configurableLayer) !== -1) { 
+          for (var i in map.layerIds) { 
+             if (map.layerIds[i].indexOf(configurableLayer) !== -1) { 
+                map.reorderLayer(map.getLayer(map.layerIds[i]), (2 + i));
+             }
+          }
+       }
+    }); 
+  $(".MoveLayerDown")
+    .live("click", function() { 
+       // Check if layer exists
+       if (typeof map.layerIds !== "undefined" && map.layerIds !== null && map.layerIds.join("").indexOf(configurableLayer) !== -1) { 
+          for (var i in map.layerIds) { 
+             if (i > 0 && map.layerIds[i].indexOf(configurableLayer) !== -1) { 
+                map.reorderLayer(map.getLayer(map.layerIds[i]), --i);
+             }
+          }
+       }
+    }); 
+
+
+  $("#infoDialog").bind('pagebeforeshow', function(event, ui) {
+       map.graphics.clear(); 
+
+       $("#webmapTitleInfo").html(currentItem.item.title);
+       $("#snippet").html(currentItem.item.snippet);
+       $("#description").html(currentItem.item.description);
+  }); // toggles footer now
+
+  $("#info").live("click",function(e) { e.preventDefault(); $("#footer").toggle(); }); 
+
+
+  $("#legend")
+    .live("click", function() { 
+       map.graphics.clear(); 
+
+       if (map.layerIds.length <= 1) { 
+         $("#legendDiv").html("No operational layers");
+
+       } else { 
+         $("#legendDiv").empty().append("<ul id='legendList'></ul>"); 
+         for (var lyr in map.layerIds) { 
+           var id = map.layerIds[lyr];
+           if (id === 'layer0') 
+              continue; 
+
+           var layer = map.getLayer(id);
+    	   esri.request({
+             url:layer.url + '/legend',
+             content:{f:"json"},
+             callbackParamName:"callback",
+             load: function(data) {
+             if (data.layers) { 
+               for (var sub in data.layers) { 
+                 var item = "<li style='list-style-type:none;margin-left:10px;'><span>"+data.layers[sub].layerName+"</span><table style='margin-left:20px'>"; 
+                 for (var d in data.layers[sub].legend) { 
+                    var label = data.layers[sub].legend[d].label, 
+                        ct = data.layers[sub].legend[d].contentType, 
+                        dt = data.layers[sub].legend[d].imageData; 
+                    item += '<tr ><td><span class="legend-label">'+label+'</span></td>'; 
+                    item += '<td><img src="data:'+ ct +';base64,'+ dt; 
+                    item += '" style="margin-left:30px;"/></td></tr>'; 
+                 }
+                 item += '</table></li>';
+                 $("#legendList").append(item); 
+               }
+             }
+    	   },
+    	   error:esriConfig.defaults.io.errorHandler
+           });
+         }
+      }
+    }); 
+  
+
+  //add the legend
+  $("#legendDialog").bind('pagebeforeshow', function(event, ui) {   $(this).unbind(event); });
+
+  //setup the basemap gallery
+  $("#detailDialog").bind('pagebeforeshow', function(event, ui) { $(this).unbind(event); }); 
+
+
+}
+
+
+//mark current location on map
+function zoomToLocation(location) {
+  //clear existing graphics
+  map.graphics.clear();
+
+  var inSR = new esri.SpatialReference({'wkid': 4326}); 
+  var pt = esri.geometry.geographicToWebMercator(new esri.geometry.Point(location.coords.longitude, location.coords.latitude)),
+      outSR = new esri.SpatialReference({'wkid': 26916});
+  var symbol = new esri.symbol.PictureMarkerSymbol("http://maps.indiana.edu/images/IndianaMap/Green/mobile_location.png", 40, 40);  
+ 
+  // var graphic = map.graphics.add(new esri.Graphic(pt, symbol)); 
+  // console.log(map.graphics.graphics[0].geometry); 
+  geometryService.project([pt], outSR, function(projectedPoints) { 
+       var mypt = projectedPoints[0];
+       map.graphics.add(new esri.Graphic(mypt, symbol)); 
+       map.centerAndZoom(mypt, 8);
+  }); 
+
+}
+
+function locationError(error) {
+  switch (error.code) {
+  case error.PERMISSION_DENIED:
+    logger("Location not provided");
+    break;
+  case error.POSITION_UNAVAILABLE:
+    logger("Current location not available");
+    break;
+  case error.TIMEOUT:
+    logger("Timeout");
+    break;
+  default:
+    logger("unknown error");
+    break;
+  }
+}
+
+function getLocation() {
+  if (navigator.geolocation) {
+    // $.mobile.pageLoading(false); //true hides the dialog
+    //if you want to track as the user moves setup navigator.geolocation.watchPostion
+    navigator.geolocation.getCurrentPosition(zoomToLocation, locationError);
+  }
+}
+
+function findLocation() {
+  var searchText = $("#search")[0].value;
+  //clear existing list results
+  $('#searchList li').remove();
+  map.graphics.clear();
+  var address = {
+     'SingleLine': searchText
+  };
+  locator.addressToLocations(address);
+}
+
+function showResults(results){
+
+  //create a pick list of results
+  results.sort(function (a, b) { 
+     var aString = a.score; 
+     var bString = b.score; 
+     if (aString < bString) { return 1; } 
+     else if (aString > bString) { return -1; } 
+     else { return 0; }
+  }); 
+
+  $.each(results, function(i, result) {
+      if (result.score > 69) {  
+         var li = $('<li class="searchResult"/>'); 
+
+         //create the list content
+         var content = "<a href='#' data-result='"+JSON.stringify(result)+"'>";
+         content += result.address+"</a>";
+
+         li.append(content);
+      
+         //add the list item to the feature type list
+         $('#searchList').append(li);
+      }
+  });
+
+  //refresh the featurelist so the jquery mobile style is applied
+  $('#searchList').listview();
+  $('#searchList').listview('refresh');  
+}
+
+ $(".searchResult")
+    .live("click", function(e) { 
+      e.preventDefault();  
+      var r = jQuery.parseJSON($(this).find("a").attr("data-result")); 
+      addResult(r); 
+    }); 
+
+ function addResult(result) {
+
+   //clear any existing graphics
+   map.graphics.clear();
+   //add selected geocode result to map and zoom
+   var infoTemplate = new esri.InfoTemplate("Result", "${*}");
+   var r = Math.floor(Math.random() * 250);
+   var g = Math.floor(Math.random() * 100);
+   var b = Math.floor(Math.random() * 100);
+
+   var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([r, g, b, 0.5]), 5), new dojo.Color([r, g, b, 0.9]));
+
+
+   var wmloc = result.location; // @TODO change to UTM projection
+   var attr = { "Address": result.address  };
+
+   var graphic = new esri.Graphic(wmloc, symbol, attr, infoTemplate);
+
+   map.graphics.add(graphic);
+   //convert point to extent and expand a bit
+    var factor = 1;
+    var extent = new esri.geometry.Extent(wmloc.x - factor, wmloc.y - factor, wmloc.x + factor, wmloc.y + factor, wmloc.SpatialReference);
+   map.setExtent(extent.expand(2));
+  
+   //close the dialog
+   $('#searchDialog').dialog('close');
+ }
+
+ function orientationChanged() {
+   if (map) { resizeMap(); }
+ }
+
+ function resizeMap() {
+   if (map) {
+     //resize map section
+     var height = $(window).height(), width = $(window).width(); 
+
+     if (height < width && width < 500) { // landscape
+        $("#header, #footer").hide();   
+
+     } else {  // portrait                
+        $("#header, #footer").show();          
+        var header = $("#header");
+        var footer = $("#footer");
+        var content = $("#mapcontent");
+        var viewport_height = $(window).height();
+        // var content_height = viewport_height - header.outerHeight() - footer.outerHeight();
+        var content_height = viewport_height; // -10        
+        content_height -= (content.outerHeight() - content.height());
+        content.height(content_height);
+
+     }
+     map.reposition();
+     map.resize();
+   }
+ }
+
+
+
+function executeIdentifyTask(evt) { 
+  map.graphics.clear();  
+  identifyParams.geometry = evt.mapPoint;
+  identifyParams.mapExtent = map.extent; 
+  deferredArray = []; 
+
+  for (var lyr in webmap.itemData.operationalLayers) { 
+    if (webmap.itemData.operationalLayers[lyr].visibility) { 
+       identifyTask = new esri.tasks.IdentifyTask(webmap.itemData.operationalLayers[lyr].url); 
+       deferredArray[lyr] = identifyTask.execute(identifyParams); 
+       deferredArray[lyr].addCallback(function(response) { 
+         return dojo.map(response, function(result) { 
+   	    var feature = result.feature; 
+	    var content = "<table>"; 
+            var title = result.value || result.layerName; 
+	    for (var j in result.feature.attributes) { 
+               if (j != 'OBJECTID' && j != 'Shape' && j != 'SHAPE' && j != 'SHAPE.len' && j != 'SHAPE.area') {
+                   content += "<tr><td class='detail-list-item'>"+ j +":</td><td class='detail-list-item'>"+ result.feature.attributes[j] +"</td></tr>";
+               }
+	    }
+            content += "</table>"; 
+            var template = new esri.InfoTemplate({"title":result.value, "content":content}); 
+            feature.setInfoTemplate(template); 
+	    return feature; 
+         });
+       }); 
+    }
+  }
+
+  map.infoWindow.setFeatures(deferredArray); 
+  map.infoWindow.show(evt.mapPoint);   
+}
+
+/*
+* takes a pseudo esri webmap object
+* and calls as appropriate
+*
+*
+* Embedded viewer only needs layers!? 
+*/
+
+function initMap(webmap) { 
+  // basemap is first 
+  map.removeAllLayers(); 
+  if (webmap.itemData.baseMap && webmap.itemData.baseMap.baseMapLayers) {
+     var options = {};
+     options.url = webmap.itemData.baseMap.baseMapLayers[0].url; 
+     options.id = 'layer0';
+     initWebMapLayer(options);      
+  }
+  for (var lyr in webmap.itemData.operationalLayers) { 
+      var myreg = /^.*\/services\/(.*)\//i; 
+      var match = myreg.exec(webmap.itemData.operationalLayers[lyr]['url']); 
+      if (match != null && match[1]) { 
+	  var id = match[1]; 
+	  id = (id.match(/\//g)) ? id.replace(/\//g,'_') : id; 	  // forward slash is a no-no	  
+	  webmap.itemData.operationalLayers[lyr]['id'] = id; 
+      }
+      webmap.itemData.operationalLayers[lyr]['init'] = true; 
+      initWebMapLayer(webmap.itemData.operationalLayers[lyr]); 
+  } 
+}
+
+function initWebMapLayer(options) {
+  /*
+   * options 
+   *  url, id, title
+   */ 
+  options.url = (options.url.match(/^http/i))
+      ? options.url 
+      : options.url = ('http://maps.indiana.edu/ArcGIS/rest/services/'+options.url+'/MapServer');  // fragment 
+
+  if (options.id) {
+      options.id = options.id;
+  } else { 
+      var myreg = /^\/services\/(.*)\/MapServer/i; 
+      var match = myreg.exec(url); 
+      if (match != null && match[1]) { 
+         options.id = match[1]; 
+      }
+  }
+        
+  if (options.title) {
+      options.title = options.title; 
+  } else { 
+      var ids = options.id.split('/'); 
+      options.title = (ids.length > 1) 
+        ? (ids[1].replace(/_/g,' ') + ' - ' + ids[0]) 
+	: (options.id.replace(/_/g,' '));
+  }
+
+  options.type = options.type || ""; 
+  options.description = (options.description && options.description.match(/\n/g)) 
+     ? options.description.replace(/\n/g,'<br />') 
+     : ""; 
+       
+  // forward slash is a no-no      
+  options.id = (options.id.match(/\//g)) ? options.id.replace(/\//g,'_') : options.id; 
+  if (options.id !== "layer0" && map.getLayer(options.id)) { return; } // existence check
+
+  if (options.url.indexOf("Basemaps") !== -1) { 
+      options.opacity = 1; 
+  } else if (/Polygon/.test(options.geometryType) || /Raster/.test(options.type)) { 
+      options.opacity = (options.opacity && options.opacity < 0.75) ? options.opacity : 0.75; 
+  }
+
+  var layer; 
+  if (/Central\_Indiana/.test(options.url)) { 
+    layer = new esri.layers.ArcGISDynamicMapServiceLayer(options.url, {
+							     "id":options.id, 
+							     "visible":options.visibility, 
+							     "opacity":options.opacity
+							     });
+
+  } else if (options.url.indexOf("maps.indiana.edu") !== -1) { 
+    layer = new esri.layers.ArcGISTiledMapServiceLayer(options.url, {
+							     "id":options.id, 
+							     "visible":options.visibility, 
+							     "opacity":options.opacity
+							     });
+  } else if (options.type.indexOf("Feature") !== -1) { 
+    layer = new esri.layers.ArcGISDynamicMapServiceLayer(options.url, {
+							     "id":options.id, 
+							     "visible":options.visibility, 
+							     "opacity":options.opacity
+							     });
+  }
+
+
+  if (options.url.indexOf("Basemaps") !== -1) { 
+
+     webmap.itemData.baseMap = {
+	"baseMapLayers":[{
+		"url":options.url,
+		"id":options.id,
+		"visibility":true,
+		"opacity":1,
+		"type":options.type,
+		"description":options.description
+	    }],
+	    "title":options.title
+     }; 
+
+     // initial basemap add, complains 
+     try { 
+       if (map.getLayer('layer0')) { 
+          map.removeLayer(map.getLayer('layer0')); 
+       }
+
+     } catch (err) { 
+
+       logger(err.message); 
+     } 
+
+     try { 
+       map.addLayer(layer,0); 
+
+     } catch (err) { 
+       
+       logger(err.message); 
+     }
+
+   } else {  
+     try { 
+       if (webmap.itemData.operationalLayers.length > 0 && options.init !== "Undefined" && options.init === true) { 
+
+       } else { 
+
+          webmap.itemData.operationalLayers.push(options); 
+       }
+       map.addLayer(layer); 	
+     } catch (err) { logger(err.message); }
+   }
+
+  var header = $("#header");
+  var footer = $("#footer");
+  var content = $("#mapcontent, #map");
+  var viewport_height = $(window).height();
+  // var content_height = viewport_height - header.outerHeight() - footer.outerHeight(); // was -10 too
+     
+  // content_height -= (content.outerHeight() - content.height());
+  var content_height = viewport_height; // was -10 too
+  content.height(content_height);     
+
+  map.reposition(); 
+  map.resize();   
+
+  $('#mapPage').bind('pageshow', function(event, ui) {  resizeMap();   });
+
+}
+
+
+function handleMapServer(url) {
+    var myreg = /^http:\/\/(.*)\/ArcGIS\/rest\/services\/(.*)\/MapServer/i; 
+    var match = myreg.exec(url); 
+
+    if (/ImageServer$/.test(url)) { 
+	var myreg = /^http:\/\/(.*)\/ArcGIS\/rest\/services\/(.*)\/ImageServer/i; 
+	var match = myreg.exec(url); 
+	if (match != null && match[1] && match[2]) { 
+	    var id = match[1].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_') + '_' + match[2].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_'); 
+	    var title = match[2].replace('/','_').replace('.','_'); 
+	    var options = {}; 
+	    options.id = id; 
+	    options.url = url; 
+	    options.title = title; 
+	    options.visibility = true; 
+	    options.opacity = 1.0; 
+	    options.displayField = ""; 
+	    options.type = "Imagery"; 
+	    options.geometryType = ""; 
+	    options.description = "Image Service"; 
+	    initWebMapLayer(options);
+        }
+    } else if (/Central\_Indiana/.test(url)) { 
+	    var id = match[1].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_') + '_' + match[2].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_'); 
+	    var title = match[2].replace('/','_').replace('.','_'); 
+	    var opt = {}; 
+	    opt.id = id; 
+	    opt.url = url; 
+	    opt.title = title; 
+	    opt.visibility = true; 
+	    opt.opacity = 1.0; 
+	    opt.displayField = ""; 
+	    opt.type = "Dynamic"; 
+	    opt.geometryType = ""; 
+	    opt.description = ""; 
+	    initWebMapLayer(opt);
+
+    } else if (match != null && match[1] && match[2]) { 
+	    var id = match[1].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_') + '_' + match[2].replace(/\//g,'_').replace(/\./g,'_').replace(/\:/g,'_'); 
+	    var title = match[2].replace('/','_').replace('.','_'); 
+	    
+	    // We get a url, and make assumption its a mapserver. 
+	    esri.request({
+		url:url+'/0',
+		content:{f:"json"},
+		callbackParamName:"callback",
+		load: function(data) {	
+		    var opt = {}; 
+		    opt.id = id; 
+		    opt.url = url; 
+		    opt.title = title; 
+		    opt.visibility = true; 
+		    opt.opacity = 0.75; 
+		    opt.displayField =  data.displayField || ""; 
+		    opt.type = data.type || ""; 
+		    opt.geometryType = data.geometryType || ""; 
+		    opt.description = data.description || ""; 
+		    initWebMapLayer(opt);
+		}
+	    }); 
+    }
+}
+
+
+
+
+    </script>
+  </head>
+  
+  <body onorientationchange="orientationChanged();">
+
+    <div data-role="page" id="mapPage" class="page-map">
+      <div id="header" data-role="header">
+        <h1><span id="webmapTitle">IndianaMap</span></h1>
+        <a id="geolocate" data-icon="custom" href="#" onclick="getLocation();" class="ui-btn-left" data-iconpos="notext" title="Locate"></a>
+        <a id="info" data-icon="gear" href="#" data-rel="dialog" class="ui-btn-right" data-iconpos="notext"></a>
+      </div>
+      <div data-role="content" id="mapcontent">
+        <div id="map"></div>
+      </div>
+      <!--Navbar-->
+      <div id="footer" data-role="footer" data-position="fixed">
+        <div data-role="navbar" class="customIcons">
+          <ul>
+            <li>
+              <a id="layers" data-icon="custom"  href="#layerDialog" data-rel="page">Layers</a>
+            </li>
+            <li>
+              <a id="legend" data-icon="custom"  href="#legendDialog" data-rel="dialog">Legend</a>
+            </li>
+            <li>
+              <a id="details" data-icon="custom"  href="#detailDialog" data-rel="page">Basemap</a>
+            </li>
+            <li>
+              <a id="searchMap" data-icon="custom" href="#searchDialog" data-rel="dialog">Search</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- configureDialog" --> 
+    <div id="configureDialog" data-role="page">
+     <div data-role="header"><h4><span>Configure</span><h4></div>
+     <div data-role="content">
+       <a href="mobile.html" data-role="button" data-icon="plus" data-theme="b" class="AddLayer">Add</a>
+       <a href="mobile.html" data-role="button" data-icon="delete" class="RemoveLayer">Remove</a>
+       <a href="#configureDialog&ui-state=dialog" data-role="button" data-icon="info" class="InfoForLayer">Info</a>
+       <p id="layerDialogDescription"></p>
+       <a href="mobile.html" data-role="button" data-icon="arrow-u" class="MoveLayerUp">Move Up</a>
+       <a href="mobile.html" data-role="button" data-icon="arrow-d" class="MoveLayerDown">Move Down</a>
+     </div>
+    </div>
+    <!--Layer Dialog --> 
+    <div id="layerDialog" data-role="page">
+      <div data-role="header">
+        <a href="mobile.html" data-icon="back" data-iconpos="notext" data-direction="reverse" class="ui-btn-left jqm-home">Back</a>
+        <h1><span>Layers</span></h1>
+        <a href="#layerDialog" data-icon="" class="ui-btn-right" id="SeeAllLayers">Current Layers</a>
+      </div>
+      <div data-role="content">
+
+       <ul data-role="listview" 
+           data-split-theme="b" 
+           data-split-icon="arrow" 
+           id="AllLayers" 
+           data-filter="true" 
+           data-filter-placeholder="Search layers..." 
+           data-filter-theme="b">
+<li data-role='list-divider'>A</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Agribusiness_Confined_Feeding_Operations'>Agribusiness Confined Feeding Operations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Agriculture_Census'>Agriculture Census</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Agriculture_Cultivated_Areas'>Agriculture Cultivated Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Airports_Boundaries_ESRI'>Airports Boundaries ESRI</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Airports_Public_Use_INDOT'>Airports Public Use INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Airports_Public_Use_NTAD'>Airports Public Use NTAD</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Aquifer_Systems_Bedrock_IDNR'>Aquifer Systems Bedrock IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Aquifer_Systems_Unconsolidated_IDNR'>Aquifer Systems Unconsolidated IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Aquifers_Bedrock'>Aquifers Bedrock</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Aquifers_Unconsolidated'>Aquifers Unconsolidated</a></li>
+<li data-role='list-divider'>B</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Bedrock_Elevation'>Bedrock Elevation</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Bedrock_Geology'>Bedrock Geology</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Bedrock_Structural_Features'>Bedrock Structural Features</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Benchmarks_GPS_NOAA'>Benchmarks GPS NOAA</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Benchmarks_NOAA'>Benchmarks NOAA</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Boundaries_Miscellaneous_IDHS'>Boundaries Miscellaneous IDHS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Bridges_County_INDOT'>Bridges County INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Bridges_System1_INDOT'>Bridges System1 INDOT</a></li>
+<li data-role='list-divider'>C</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Canals_Historic_Routes'>Canals Historic Routes</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Canals_Historic_Structures'>Canals Historic Structures</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Census_Blockgroups'>Census Blockgroups</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Census_Blocks'>Census Blocks</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Census_Counties'>Census Counties</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Census_Tracts'>Census Tracts</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Imagery_Central_Indiana_DEM'>Central Indiana DEM</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Imagery_Central_Indiana_Hillshade'>Central Indiana Hillshade</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Data_NCRDS'>Coal Data NCRDS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Depth_Danville'>Coal Depth Danville</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Depth_Springfield'>Coal Depth Springfield</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Elevation_Colchester'>Coal Elevation Colchester</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Elevation_Danville'>Coal Elevation Danville</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Elevation_Houchin_Creek'>Coal Elevation Houchin Creek</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Elevation_Hymera'>Coal Elevation Hymera</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Elevation_Springfield'>Coal Elevation Springfield</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Abandoned_Features'>Coal Mines Abandoned Features</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Abandoned_Highwalls'>Coal Mines Abandoned Highwalls</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Abandoned_Lands'>Coal Mines Abandoned Lands</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Entries'>Coal Mines Entries</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Surface'>Coal Mines Surface</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Mines_Underground'>Coal Mines Underground</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Thickness_Danville'>Coal Thickness Danville</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Thickness_Danville_Availability'>Coal Thickness Danville Availability</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Thickness_Hymera'>Coal Thickness Hymera</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Thickness_Springfield'>Coal Thickness Springfield</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Coal_Thickness_Springfield_Availability'>Coal Thickness Springfield Availability</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Communications_Broadband_Coverage_Wireless'>Communications Broadband Coverage Wireless</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Communications_Broadband_Coverage_Wireline'>Communications Broadband Coverage Wireline</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Communications_Cellular_Towers_FCC'>Communications Cellular Towers FCC</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Congress_112th_Districts'>Congress 112th Districts</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_HAZUS_Emergency'>Critical Facilities HAZUS Emergency</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_HAZUS_Hospitals_Clinics'>Critical Facilities HAZUS Hospitals Clinics</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_IDHS_Emergency_Medical_Services'>Critical Facilities IDHS Emergency Medical Services</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_IDHS_Fire_Stations'>Critical Facilities IDHS Fire Stations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_IDHS_Hospitals'>Critical Facilities IDHS Hospitals</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_ISDH_Hospitals_Rural_Health_Clinics'>Critical Facilities ISDH Hospitals Rural Health Clinics</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_ISDH_Long_Term_Care'>Critical Facilities ISDH Long Term Care</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_MHMP_Fire_Stations'>Critical Facilities MHMP Fire Stations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_MHMP_Medical_Care'>Critical Facilities MHMP Medical Care</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_MHMP_Police_Stations'>Critical Facilities MHMP Police Stations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Critical_Facilities_MHMP_Schools'>Critical Facilities MHMP Schools</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2001'>Crops 2001</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2002'>Crops 2002</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2003'>Crops 2003</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2006'>Crops 2006</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2008'>Crops 2008</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2009'>Crops 2009</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Crops_2010'>Crops 2010</a></li>
+<li data-role='list-divider'>D</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Dams_EPA'>Dams EPA</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Dams_IDNR'>Dams IDNR</a></li>
+<li data-role='list-divider'>E</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Ecology_Ecoregions'>Ecology Ecoregions</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Ecology_Trees_Big'>Ecology Trees Big</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Elevation_Contours_24k_USGS'>Elevation Contours 24k USGS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Energy_Alternative_Fuel_Sites'>Energy Alternative Fuel Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Energy_Electric_Service_Territories'>Energy Electric Service Territories</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Energy_Ethanol_Production_Facilities'>Energy Ethanol Production Facilities</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Energy_HAZUS_Power_Facilities'>Energy HAZUS Power Facilities</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Energy_Pipelines_Oil_Gas'>Energy Pipelines Oil Gas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Ethnicity_American_Indian'>Ethnicity American Indian</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Ethnicity_Asian'>Ethnicity Asian</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Ethnicity_Black'>Ethnicity Black</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Ethnicity_Hispanic'>Ethnicity Hispanic</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Ethnicity_White'>Ethnicity White</a></li>
+<li data-role='list-divider'>F</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_BMV_License_Branches'>Facilities BMV License Branches</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Cemeteries'>Facilities Cemeteries</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Industrial_Parks_INDOT'>Facilities Industrial Parks INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Intermodal_Terminals_NTAD'>Facilities Intermodal Terminals NTAD</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Libraries'>Facilities Libraries</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Museums'>Facilities Museums</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Ports_NTAD'>Facilities Ports NTAD</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Facilities_Religous_Facilities'>Facilities Religous Facilities</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Floodplains_DFIRM'>Floodplains DFIRM</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Floodplains_DFIRM_BFE'>Floodplains DFIRM BFE</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Floodplains_DFIRM_Xsect'>Floodplains DFIRM Xsect</a></li>
+<li data-role='list-divider'>G</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_General_Assembly_117th_House'>General Assembly 117th House</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_General_Assembly_117th_Senate'>General Assembly 117th Senate</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Glacial_PreWisconsin_Glacial_Limit'>Glacial PreWisconsin Glacial Limit</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Glacial_Quaternary_Geology'>Glacial Quaternary Geology</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Glacial_Wisconsin_Glacial_Limit'>Glacial Wisconsin Glacial Limit</a></li>
+<li data-role='list-divider'>H</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Hydrologic_Terrains'>Hydrologic Terrains</a></li>
+<li data-role='list-divider'>I</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Industrial_Minerals_Data'>Industrial Minerals Data</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Industrial_Minerals_Quarries_Abandoned'>Industrial Minerals Quarries Abandoned</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Industrial_Minerals_Sand_Gravel_Pits_Abandoned'>Industrial Minerals Sand Gravel Pits Abandoned</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Industrial_Minerals_Sand_Gravel_Resources'>Industrial Minerals Sand Gravel Resources</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Industrial_Minerals_Sites_2001'>Industrial Minerals Sites 2001</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Highways_INDOT'>Interstates Highways INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Interstates_TIGER'>Interstates Interstates TIGER</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Mile_Markers_System1_INDOT'>Interstates Mile Markers System1 INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Ramps_INDOT'>Interstates Ramps INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Roadways_INDOT'>Interstates Roadways INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Traffic_Counts_INDOT'>Interstates Traffic Counts INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Interstates_Traffic_Zone_Analysis_TIGER'>Interstates Traffic Zone Analysis TIGER</a></li>
+<li data-role='list-divider'>K</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Karst_Cave_Density'>Karst Cave Density</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Karst_Dye_Lines'>Karst Dye Lines</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Karst_Dye_Points'>Karst Dye Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Karst_Sinkhole_Areas'>Karst Sinkhole Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Karst_Springs'>Karst Springs</a></li>
+<li data-role='list-divider'>L</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_1992'>Land Cover 1992</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_2001'>Land Cover 2001</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_2006'>Land Cover 2006</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_Change_2001_2006'>Land Cover Change 2001 2006</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_Impervious_Surfaces_2001'>Land Cover Impervious Surfaces 2001</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_Impervious_Surfaces_2006'>Land Cover Impervious Surfaces 2006</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_Impervious_Surfaces_Change_2001_2006'>Land Cover Impervious Surfaces Change 2001 2006</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Land_Cover_Tree_Canopy_2001'>Land Cover Tree Canopy 2001</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Land_Parcels_County_IDHS'>Land Parcels County IDHS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Local_Boundaries_Minor_Civil_Divisions'>Local Boundaries Minor Civil Divisions</a></li>
+<li data-role='list-divider'>M</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Managed_Lands_Hoosier_National_Forest_Mgt_Areas'>Managed Lands Hoosier National Forest Mgt Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Managed_Lands_Hoosier_National_Forest_Ownership'>Managed Lands Hoosier National Forest Ownership</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Managed_Lands_IDNR'>Managed Lands IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Managed_Lands_Patoka_River_NWR'>Managed Lands Patoka River NWR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Monitoring_Air_Quality_NTAD'>Monitoring Air Quality NTAD</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Monitoring_Bacteria_EPA'>Monitoring Bacteria EPA</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Monitoring_Streamflow_Gauges'>Monitoring Streamflow Gauges</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Monitoring_Weather_Stations'>Monitoring Weather Stations</a></li>
+<li data-role='list-divider'>P</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_PLSS_Counties'>PLSS Counties</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_PLSS_Sections'>PLSS Sections</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_PLSS_State'>PLSS State</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_PLSS_Surveyor_Tie_Cards'>PLSS Surveyor Tie Cards</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_PLSS_Townships'>PLSS Townships</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Petroleum_Fields'>Petroleum Fields</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Petroleum_Wells'>Petroleum Wells</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Physiography_National_Natural_Landmarks'>Physiography National Natural Landmarks</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Physiography_Natural_Features'>Physiography Natural Features</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Physiography_Natural_Regions'>Physiography Natural Regions</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Physiography_Regions'>Physiography Regions</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Places_GNIS_USGS'>Places GNIS USGS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Places_Incorporated_Areas'>Places Incorporated Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Places_Populated_Areas'>Places Populated Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Places_Urban_Areas'>Places Urban Areas</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Age_Median'>Population Age Median</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Census_Data_Historical'>Population Census Data Historical</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Change_1990_2000'>Population Change 1990 2000</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Children_Poverty'>Population Children Poverty</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Density_Blockgroups'>Population Density Blockgroups</li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Demographics_Population_Family_Size'>Population Family Size</a></li>
+<li data-role='list-divider'>Q</li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Quadrangle_Boundaries_100k'>Quadrangle Boundaries 100k</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Quadrangle_Boundaries_24k'>Quadrangle Boundaries 24k</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Quadrangle_Boundaries_250k'>Quadrangle Boundaries 250k</a></li>
+<li data-role='list-divider'>R</li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Railroads_100K_NTAD'>Railroads 100K NTAD</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Railroads_Active_Abandoned_INDOT'>Railroads Active Abandoned INDOT</a></li>
+<li><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Railroads_Active_INDOT'>Railroads Active INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Railroads_Amtrak_Stations_NTAD'>Railroads Amtrak Stations NTAD</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Railroads_Rail_Crossings_INDOT'>Railroads Rail Crossings INDOT</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Recreation_Facilities_IDNR'>Recreation Facilities IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Recreation_Trails_IDNR'>Recreation Trails IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Redistricted_Congressional_Districts'>Redistricted Congressional Districts</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Redistricted_General_Assembly_House_Districts'>Redistricted General Assembly House Districts</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Redistricted_General_Assembly_Senate_Districts'>Redistricted General Assembly Senate Districts</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Brownfields'>Remediation Brownfields</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Cleanup_Sites'>Remediation Cleanup Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Corrective_Action_Sites'>Remediation Corrective Action Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Institutional_Control_Sites'>Remediation Institutional Control Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Manufactured_Gas_Plants'>Remediation Manufactured Gas Plants</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Superfund_Sites'>Remediation Superfund Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Remediation_Voluntary_Remediation_Program'>Remediation Voluntary Remediation Program</a></li>
+<li data-role='list-divider'>S</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Schools_Districts_USCB'>Schools Districts USCB</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Schools_HAZUS'>Schools HAZUS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Schools_Higher_Education_ICHE'>Schools Higher Education ICHE</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Schools_IDOE'>Schools IDOE</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Seismic_Data'>Seismic Data</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Seismic_Earthquake_Epicenters'>Seismic Earthquake Epicenters</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Seismic_Earthquake_Liquefaction'>Seismic Earthquake Liquefaction</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Seismic_Earthquake_Liquefaction_Potential'>Seismic Earthquake Liquefaction Potential</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Seismic_Shaking_Materials_Response'>Seismic Shaking Materials Response</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Silurian_Reefs_Points'>Silurian Reefs Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Silurian_Reefs_Polygons'>Silurian Reefs Polygons</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Soils_SSURGO_Soil_Survey'>Soils SSURGO Soil Survey</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Soils_STATSGO_Prime_Farmland'>Soils STATSGO Prime Farmland</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Soils_STATSGO_Shrink_Swell_Characteristics'>Soils STATSGO Shrink Swell Characteristics</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Soils_STATSGO_Soil_Associations'>Soils STATSGO Soil Associations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Storage_Tanks_Underground'>Storage Tanks Underground</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Storage_Tanks_Underground_Leaking'>Storage Tanks Underground Leaking</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Streets_Address_Points_IDHS'>Streets Address Points IDHS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Streets_Centerlines_IDHS'>Streets Centerlines IDHS</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Streets_Roads_INDOT_2005'>Streets Roads INDOT 2005</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Infrastructure_Streets_Roads_TIGER_2005'>Streets Roads TIGER 2005</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Clay_Thickness_Grid'>Surficial Clay Thickness Grid</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Clay_Thickness_Points'>Surficial Clay Thickness Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Gamma_Ray_Logs'>Surficial Gamma Ray Logs</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Sand_Thickness_Grid'>Surficial Sand Thickness Grid</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Sand_Thickness_Points'>Surficial Sand Thickness Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Geology_Surficial_Unconsolidated_Thickness'>Surficial Unconsolidated Thickness</a></li>
+<li data-role='list-divider'>T</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Time_Zones'>Time Zones</a></li>
+<li data-role='list-divider'>V</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Government_Voting_Districts_USCB'>Voting Districts USCB</a></li>
+<li data-role='list-divider'>W</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Composting_Facilities'>Waste Composting Facilities</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Construction_Demolition_Sites'>Waste Construction Demolition Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Industrial_Sites'>Waste Industrial Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Old_Landfills'>Waste Old Landfills</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Open_Dump_Sites'>Waste Open Dump Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Restricted_Sites'>Waste Restricted Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Septage_Sites'>Waste Septage Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Solid_Active_Landfills'>Waste Solid Active Landfills</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Tire_Sites'>Waste Tire Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Transfer_Stations'>Waste Transfer Stations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Treatment_Storage_Disposal_Sites'>Waste Treatment Storage Disposal Sites</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Water_NPDES_Facilities'>Waste Water NPDES Facilities</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Waste_Water_NPDES_Pipe_Locations'>Waste Water NPDES Pipe Locations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Hydrography_Points'>Water Bodies Hydrography Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Lake_Shore_Features'>Water Bodies Lake Shore Features</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Lakes'>Water Bodies Lakes</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Rivers'>Water Bodies Rivers</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Rivers_Inventory'>Water Bodies Rivers Inventory</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Rivers_Outstanding'>Water Bodies Rivers Outstanding</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Streams'>Water Bodies Streams</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Bodies_Streams_Features'>Water Bodies Streams Features</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Quality_Lakes_Impaired'>Water Quality Lakes Impaired</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Quality_Observations'>Water Quality Observations</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Quality_Sediment_Inventory'>Water Quality Sediment Inventory</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Quality_Statistics'>Water Quality Statistics</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Quality_Streams_Impaired'>Water Quality Streams Impaired</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Wells_IDNR'>Water Wells IDNR</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Wells_Observation_Wells'>Water Wells Observation Wells</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Water_Wells_iLITH'>Water Wells iLITH</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC06'>Watersheds HUC06</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC08'>Watersheds HUC08</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC08_2009'>Watersheds HUC08 2009</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC10_2009'>Watersheds HUC10 2009</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC11'>Watersheds HUC11</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC12_2009'>Watersheds HUC12 2009</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Watersheds_HUC14'>Watersheds HUC14</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Wetlands_Inventory_Lines'>Wetlands Inventory Lines</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Wetlands_Inventory_Points'>Wetlands Inventory Points</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Hydrology_Wetlands_Inventory_Polygons'>Wetlands Inventory Polygons</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Wind_Power_100m'>Wind Power 100m</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Wind_Power_50m'>Wind Power 50m</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Wind_Speed_100m'>Wind Speed 100m</a></li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Environment_Wind_Speed_50m'>Wind Speed 50m</a></li>
+<li data-role='list-divider'>Z</li>
+<li ><a href="#configureDialog" data-rel="dialog" class="layerListLink" data-lyr-id='Reference_Zip_Codes_USCB'>Zip Codes USCB</a></li>
+       </ul>
+       <ul data-role="listview" 
+           data-split-theme="b" 
+           data-split-icon="arrow" 
+           id="CurrentLayers" 
+           data-filter="false"></ul>
+     </div>
+    </div>
+
+    <!--Search Dialog-->
+    <div id="searchDialog" data-role="dialog">
+      <div data-role="header">
+        <h1><span>Search</span></h1>
+      </div>
+      <div data-role="content">
+        <div data-role="fieldcontain">
+          <label for="search">
+            Search location:
+          </label>
+          <input type="search" onKeyDown="if(event.keyCode === 13)findLocation();" id="search"
+          value="" />
+        </div>
+        <ul id="searchList" data-role="listview">
+        </ul>
+      </div>
+    </div>
+
+    <!--Legend Dialog-->
+    <div id="legendDialog" data-role="dialog">
+      <div data-role="header">
+        <h1><span>Legend</span></h1>
+      </div>
+      <div data-role="content">
+        <div id="legendDiv"><ul id="legendList"></ul></div>
+      </div>
+    </div>
+
+    <!--Details Dialog (Basemap Gallery) -->
+
+    <div id="detailDialog" data-role="dialog">
+      <div data-role="header">
+        <h1><span>Basemap Gallery</span></h1>
+      </div>
+      <div data-role="content">
+        <ul data-role="listview" class="ui-listview">
+           <li><a href="mobile.html" id="basemap_Best_Available_Imagery_Hybrid" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Best_Available_Imagery_Hybrid/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Best_Available_Imagery_Hybrid_rectangle.png" />
+                 <h3>Best Available Imagery Hybrid</h3>
+                 <p>Best Available Imagery Hybrid Basemap -  (2005 - 2011) -- Hybrid basemap of roads, railroads, and places over best available imagery for Indiana</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Best_Available_Imagery" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Best_Available_Imagery/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Best_Available_Imagery_rectangle.png" />
+                 <h3>Best Available Imagery</h3>
+                 <p>Best Available Imagery Hybrid -  (2005 - 2011) -- Hybrid basemap of roads, railroads, and places over best available imagery for Indiana</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Dark_Color_Shaded_Relief" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Dark_Color_Shaded_Relief/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Dark_Color_Shaded_Relief_rectangle.png" />
+                 <h3>Dark Color Shaded Relief</h3>
+                 <p>Dark-Color Shaded Relief Basemap, (2006) - A dark-color basemap (2006 Indiana DEM) designed specifically to highlight map data used with it</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Imagery_2005" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Imagery_2005/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Imagery_2005_rectangle.png" />
+                 <h3>Imagery 2005</h3>
+                 <p>Orthophotography Basemap, (2005) - Shows natural color high-resolution orthophotography for Indiana, collected in Spring 2005</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Imagery_Hybrid_2005" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Imagery_Hybrid_2005/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Imagery_Hybrid_2005_rectangle.png" />
+                 <h3>Imagery Hybrid 2005</h3>
+                 <p>Imagery Hybrid Basemap, (2005) - A scale-dependent basemap combining 2005 orthophotograpy with transportation and other layers</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Light_Color_Shaded_Relief" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Light_Color_Shaded_Relief/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Light_Color_Shaded_Relief_rectangle.png" />
+                 <h3>Light Color Shaded Relief</h3>
+                 <p>Light-Color Shaded Relief Basemap, (2006) - A light-color basemap (2006 Indiana DEM) designed specifically to highlight map data used with it</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_NAIP_2010" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/NAIP_2010/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/NAIP_2010_rectangle.png" />
+                 <h3>NAIP 2010</h3>
+                 <p>NAIP Imagery, (2010) - Shows imagery acquired for the National Agriculture Imagery Program (NAIP) during the 2010 agricultural growing season (USDA)</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_PLSS" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/PLSS/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/PLSS_rectangle.png" />
+                 <h3>PLSS</h3>
+                 <p>PLSS Basemap, (2011) - A scale-dependent basemap that combines Public Land Survey System (PLSS) information (County, Township/Range, and Section)</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Shaded_Relief" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Shaded_Relief/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Shaded_Relief_rectangle.png" />
+                 <h3>Shaded Relief</h3>
+                 <p>Shaded Relief Basemap, (2006) - A scale-dependent basemap that combines the 2006 digital elevation model with selected transportation and other layers</p>
+           </a></li>
+           <li><a href="mobile.html" id="basemap_Topos" 
+                  data-lyr-url="http://maps.indiana.edu/arcgis/rest/services/Basemaps/Topos/MapServer">
+                 <img src="http://maps.indiana.edu/images/Basemaps/Topos_rectangle.png" />
+                 <h3>Topos</h3>
+                 <p>Topographic Quadrangle Shaded Relief Basemap, (2006) - Shows USGS topographic maps draped over shaded relief, with transportation and other layers</p>
+           </a></li>
+        </ul>
+      </div>
+    </div>
+    <!--Map Details Dialog-->
+    <div id="infoDialog" data-role="dialog">
+      <div data-role="header">
+        <h1>
+          <span id="webmapTitleInfo">
+          </span>
+        </h1>
+      </div>
+      <div data-role="content">
+        <div id="contentDiv">
+          <div id="mapDetails">
+            <div id="snippet">
+            </div>
+            <div id="description">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
