@@ -106,28 +106,28 @@
       */
 
 #geolocate .ui-icon {
-    background: url(http://maps.indiana.edu/images/indianaMap/mobile/geolocate.png) 50% 50% no-repeat;
+    background: url('../img/geolocate.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
 
 #layers .ui-icon {
-    background: url(http://maps.indiana.edu/images/indianaMap/mobile/legend.png) 50% 50% no-repeat;
+    background: url('../img/legend.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
 
 #legend .ui-icon {
-    background: url(http://maps.indiana.edu/images/indianaMap/mobile/mapDetails.png) 50% 50% no-repeat;
+    background: url('../img/mapDetails.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
 
 
 #details .ui-icon {
-    background: url(http://maps.indiana.edu/images/IndianaMap/BasemapLayer.png) 50% 50% no-repeat;
+    background: url('../img/BasemapLayer.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
 
 #searchMap .ui-icon {
-    background: url(http://maps.indiana.edu/images/indianaMap/mobile/search.png) 50% 50% no-repeat;
+    background: url('../img/search.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
 
