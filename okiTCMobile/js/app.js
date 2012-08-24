@@ -17,6 +17,20 @@ var grid, store;
 var identifyTask,identifyParams;
 
 function init() {
+    //onorientationchange doesn't always fire in a timely manner in Android so check for both orientationchange and resize
+    var supportsOrientationChange = "onorientationchange" in window,
+        orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
+
+    window.addEventListener(orientationEvent, function () {
+        orientationChanged();
+    }, false);
+    function orientationChanged() {
+        console.log("Orientation changed: " + window.orientation);
+        if(map){
+          map.reposition();
+          map.resize();
+        }
+      }
     dojo.connect(grid, "onRowClick", onRowClickHandler);
 
     //Create map and add the ArcGIS Online imagery layer
@@ -25,7 +39,7 @@ function init() {
     var popup = new esri.dijit.Popup(null, dojo.create("div"));
     map = new esri.Map("map", { extent: startExtent, infoWindow: popup });
     var streetMapLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://gis.oki.org/ArcGIS/rest/services/Maps/okibasemap_minimal/MapServer");
-    //map.addLayer(streetMapLayer);
+    map.addLayer(streetMapLayer);
     //define a popup template
     var popupTemplate = new esri.dijit.PopupTemplate({
         title: "{address}",
@@ -47,9 +61,24 @@ function init() {
     dojo.connect(featureLayer,"onClick",function(evt){
         map.infoWindow.setFeatures([evt.graphic]);
     });
+    //add the legend
+    //todo look up onLayersAddResult
+    dojo.connect(map,'onLayersAddResult',function(results){
+    var layerInfo = dojo.map(results, function(layer,index){
+        return {layer:layer.layer,title:layer.layer.name};
+    });
+    if(layerInfo.length > 0){
+    var legendDijit = new esri.dijit.Legend({
+        map:map,
+        layerInfos:layerInfo
+        },"legendDiv");
+        legendDijit.startup();
+        }
+    });
      
-     
-    map.addLayers([streetMapLayer, featureLayer]);
+    //map.addLayer(featureLayer);
+    // for legend items add them here
+    map.addLayers([featureLayer]);
 
     //Create Find Task using the URL of the map service to search
     findTask = new esri.tasks.FindTask("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/");
@@ -144,18 +173,5 @@ function zoomToLocation(location) {
   var pt = esri.geometry.geographicToWebMercator(new esri.geometry.Point(location.coords.longitude, location.coords.latitude));
   map.centerAndZoom(pt, 22);
 }
-//add the legend
-  dojo.connect(map,'onLayersAddResult',function(results){
-  var layerInfo = dojo.map(results, function(layer,index){
-    return {layer:layer.layer,title:layer.layer.name};
-  });
-    if(layerInfo.length > 0){
-    var legendDijit = new esri.dijit.Legend({
-    map:map,
-    layerInfos:layerInfo
-    },"legendDiv");
-    legendDijit.startup();
-    }
-});
 
 dojo.addOnLoad(init);
