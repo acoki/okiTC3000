@@ -1,15 +1,8 @@
 dojo.require("esri.map");
-dojo.require("dojox.grid.DataGrid");
-dojo.require("dojo.data.ItemFileReadStore");
 dojo.require("esri.tasks.find");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.form.Button");
 dojo.require("esri.dijit.Popup");
 dojo.require("esri.layers.FeatureLayer");
-dojo.require("esri.tasks.locator");
 dojo.require("esri.dijit.Legend");
-
 
 var findTask, findParams;
 var map, startExtent;
@@ -62,7 +55,6 @@ function init() {
         map.infoWindow.setFeatures([evt.graphic]);
     });
     //add the legend
-    //todo look up onLayersAddResult
     dojo.connect(map,'onLayersAddResult',function(results){
     var layerInfo = dojo.map(results, function(layer,index){
         return {layer:layer.layer,title:layer.layer.name};
@@ -75,8 +67,7 @@ function init() {
         legendDijit.startup();
         }
     });
-     
-    //map.addLayer(featureLayer);
+
     // for legend items add them here
     map.addLayers([featureLayer]);
 
@@ -100,38 +91,42 @@ function doFind() {
     //Set the search text to the value in the box
     findParams.searchText = dojo.byId("streetName").value;
     findTask.execute(findParams, showResults);
+    //clear existing list results
+    $('#searchList li').remove();
 }
-
 function showResults(results) {
-    //This function works with an array of FindResult that the task returns
-    map.graphics.clear();
-    var symbol = new esri.symbol.SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_CIRCLE, 10, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255, 0, 0]), 1), new dojo.Color([0, 255, 0, 0.25]));
+  //create a pick list of results
+  $.each(results, function(i, result) {
+    var li = $('<li class="searchResult"/>');
+    //create the list content
+    var at = " @ ";
+    var content = "<a href='#' data-result='"+JSON.stringify(result)+"'>";
+    content += result.feature.attributes.Main_Stree += at += result.feature.attributes.Cross_Stre+"</a>";
 
-    //create array of attributes
-    var items = dojo.map(results, function (result) {
-        var graphic = result.feature;
-        graphic.setSymbol(symbol);
-        map.graphics.add(graphic);
-        return result.feature.attributes;
+    li.append(content);
+    //add the list item to the feature type list
+    $('#searchList').append(li);
+      
+  });
+
+  //refresh the featurelist so the jquery mobile style is applied
+  $('#searchList').listview();
+  $('#searchList').listview('refresh');
+}
+ $(".searchResult")
+    .live("click", function(e) {
+      e.preventDefault();
+      var r = jQuery.parseJSON($(this).find("a").attr("data-result"));
+      addResult(r);
     });
 
-
-    //Create data object to be used in store
-    var data = {
-        identifier: "OBJECTID",  //This field needs to have unique values
-        label: "OBJECTID", //Name field for display. Not pertinent to a grid but may be used elsewhere.
-        items: items
-    };
-
-    //Create data store and bind to grid.
-    store = new dojo.data.ItemFileReadStore({ data: data });
-    var grid = dijit.byId('grid');
-    grid.setStore(store);
-
-    //Zoom back to the initial map extent
-    map.setExtent(startExtent);
-
-}
+ function addResult(result) {
+   //clear any existing graphics
+   map.graphics.clear();
+   map.centerAndZoom(result.feature.geometry, 5);
+   //close the dialog
+   $('#searchDialog').dialog('close');
+ }
 
 //Zoom to the parcel when the user clicks a row
 function onRowClickHandler(evt) {

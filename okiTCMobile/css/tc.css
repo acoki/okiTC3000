@@ -40,6 +40,7 @@
     overflow: hidden;
 }
 .page-map, #mapcontent.ui-content {
+    height: 80%;
     width: 100%;
     padding: 0;
     overflow: hidden;
