@@ -24,10 +24,13 @@ function init() {
           map.resize();
         }
       }
+
+    
     dojo.connect(grid, "onRowClick", onRowClickHandler);
 
     //Create map and add the ArcGIS Online imagery layer
-    startExtent = new esri.geometry.Extent({ "xmin": -9459781, "ymin": 4748484, "xmax": -9382885, "ymax": 4770727, "spatialReference": { "wkid": 102113 } });
+    startExtent = new esri.geometry.Extent({ "xmin": -9409886, "ymin": 4739912, "xmax": -9405586, "ymax": 4742778, "spatialReference": { "wkid": 102113 } });
+    //XMin: -9409886.10 YMin: 4739912.07 XMax: -9405586.52 YMax: 4742778.46
     //create a popup to replace the map's info window
     var popup = new esri.dijit.Popup(null, dojo.create("div"));
     map = new esri.Map("map", { extent: startExtent, infoWindow: popup });
@@ -39,11 +42,12 @@ function init() {
         fieldInfos: [
         {fieldName: "Main_Stree", visible: true, label:"Main Street"},
         {fieldName: "Cross_Stre", visible:true, label:"Cross Street"},
-        {fieldName: "AADT", visible: true, label:"AADT"},
+        {fieldName: "AADT", visible: true, label:"AADT", format: {places: 0,digitSeparator: true}},
         {fieldName: "CountYear", visible: true, label:"Year"}
         ],
         showAttachments:true
     });
+    popup.maximize();
     //create a feature layer based on the feature collection
     var featureLayer = new esri.layers.FeatureLayer("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/0", {
         mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
@@ -168,5 +172,33 @@ function zoomToLocation(location) {
   var pt = esri.geometry.geographicToWebMercator(new esri.geometry.Point(location.coords.longitude, location.coords.latitude));
   map.centerAndZoom(pt, 22);
 }
+// $("#map").fidget({ pinch: function(event, fidget){
+//       //var mapPoint = map.toMap(new esri.geometry.Point(event.x, event.y));
+      
+//       switch(fidget.pinch.direction){
+//          case "in": map.setLevel(map.getLevel() - 1); fidget.pinch.direction = "unknown"; break;
+//          case "out": map.setLevel(map.getLevel() + 1); fidget.pinch.direction = "unknown"; break;
+//          //case "in": map.centerAndZoom(mapPoint, map.getLevel() - 1); break;
+//          //case "out": map.centerAndZoom(mapPoint, map.getLevel() + 1); break;
+//          case "unknown": break;
+//       }
+//    } });
+function hideAddressBar()
+      {
+          if(!window.location.hash)
+          {
+              if(document.height <= window.outerHeight + 10)
+              {
+                  document.body.style.height = (window.outerHeight + 50) +'px';
+                  setTimeout( function(){ window.scrollTo(0, 1); }, 50 );
+              }
+              else
+              {
+                  setTimeout( function(){ window.scrollTo(0, 1); }, 0 );
+              }
+          }
+      }
 
+      window.addEventListener("load", hideAddressBar );
+      window.addEventListener("orientationchange", hideAddressBar );
 dojo.addOnLoad(init);
