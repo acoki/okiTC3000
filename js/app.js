@@ -1,12 +1,12 @@
 dojo.require("esri.map");
 dojo.require("esri.tasks.find");
-dojo.require("esri.dijit.Popup");
+dojo.require("esri.dijit.popup");
 dojo.require("esri.layers.FeatureLayer");
 dojo.require("esri.dijit.Legend");
 
 var findTask, findParams;
 var map, startExtent;
-var grid, store;
+// var grid, store;
 var identifyTask,identifyParams;
 
 function init() {
@@ -24,42 +24,57 @@ function init() {
           map.resize();
         }
       }
-
-    
-    dojo.connect(grid, "onRowClick", onRowClickHandler);
-
+ 
     //Create map and add the ArcGIS Online imagery layer
     startExtent = new esri.geometry.Extent({ "xmin": -9409886, "ymin": 4739912, "xmax": -9405586, "ymax": 4742778, "spatialReference": { "wkid": 102113 } });
     //XMin: -9409886.10 YMin: 4739912.07 XMax: -9405586.52 YMax: 4742778.46
     //create a popup to replace the map's info window
     var popup = new esri.dijit.Popup(null, dojo.create("div"));
-    map = new esri.Map("map", { extent: startExtent, infoWindow: popup });
+    map = new esri.Map("map", { extent: startExtent, infoWindow: popup, logo:false });
     var streetMapLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://gis.oki.org/ArcGIS/rest/services/Maps/okibasemap_minimal/MapServer");
     map.addLayer(streetMapLayer);
     //define a popup template
     var popupTemplate = new esri.dijit.PopupTemplate({
-        title: "{address}",
+        title: "{OKIID}",
         fieldInfos: [
-        {fieldName: "Main_Stree", visible: true, label:"Main Street"},
-        {fieldName: "Cross_Stre", visible:true, label:"Cross Street"},
-        {fieldName: "AADT", visible: true, label:"AADT", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear", visible: true, label:"Year"}
+        {fieldName: "Main_Street", visible: true, label:"MainStreet"},
+        {fieldName: "Cross_Street", visible:true, label:"CrossStreet"},
+        // {fieldName: "AADT_", visible: true, label:"AADT", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "Year_", visible: true, label:"Year"},
+        {fieldName: "CountYear2000", visible: true, label:"2000", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2003", visible: true, label:"2003", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2004", visible: true, label:"2004", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2005", visible: true, label:"2005", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2006", visible: true, label:"2006", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2007", visible: true, label:"2007", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2008", visible: true, label:"2008", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2009", visible: true, label:"2009", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2010", visible: true, label:"2010", format: {places: 0,digitSeparator: true}},
+        {fieldName: "CountYear2011", visible: true, label:"2011", format: {places: 0,digitSeparator: true}}
         ],
-        showAttachments:true
+        // mediaInfos: [{
+        //     type: "linechart",
+        //     value: {
+        //       fields: ["CountYear2000", "CountYear2003", "CountYear2004", "CountYear2005", "CountYear2006", "CountYear2007", "CountYear2008", "CountYear2009", "CountYear2010", "CountYear20011"],
+        //       theme: ""
+        //     }
+        //   }],
+        showAttachments:false
     });
-    popup.maximize();
     //create a feature layer based on the feature collection
     var featureLayer = new esri.layers.FeatureLayer("http://gis.oki.org/ArcGIS/rest/services/OP/TrafficCounts/MapServer/0", {
         mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
         infoTemplate: popupTemplate,
-        outFields: ['Main_Stree','Cross_Stre','AADT','CountYear']
+        outFields: ['OKIID', 'Main_Street','Cross_Street','AADT_','Year_', 'CountYear2000' , 'CountYear2003', 'CountYear2004', 'CountYear2005', 'CountYear2006', 'CountYear2007', 'CountYear2008', 'CountYear2009', 'CountYear2010', 'CountYear2011']
     });
-    // featureLayer.setDefinitionExpression("Main_Stree != ''");
+    // featureLayer.setDefinitionExpression("Main_Street != ''");
     dojo.connect(featureLayer,"onClick",function(evt){
+      console.log("onClick Event");
         map.infoWindow.setFeatures([evt.graphic]);
     });
     //add the legend
     dojo.connect(map,'onLayersAddResult',function(results){
+      console.log("Map onLoad event");
     var layerInfo = dojo.map(results, function(layer,index){
         return {layer:layer.layer,title:layer.layer.name};
     });
@@ -82,7 +97,7 @@ function init() {
     findParams = new esri.tasks.FindParameters();
     findParams.returnGeometry = true;
     findParams.layerIds = [0];
-    findParams.searchFields = ["Main_Stree", "Cross_Stre"];
+    findParams.searchFields = ["Main_Street", "Cross_Street", "Jurisdiction"];
     findParams.outSpatialReference = map.spatialReference;
 
     dojo.connect(map, 'onLoad', function (theMap) {
@@ -105,12 +120,11 @@ function showResults(results) {
     //create the list content
     var at = " @ ";
     var content = "<a href='#' data-result='"+JSON.stringify(result)+"'>";
-    content += result.feature.attributes.Main_Stree += at += result.feature.attributes.Cross_Stre+"</a>";
+    content += result.feature.attributes.Main_Street += at += result.feature.attributes.Cross_Street+"</a>";
 
     li.append(content);
     //add the list item to the feature type list
     $('#searchList').append(li);
-      
   });
 
   //refresh the featurelist so the jquery mobile style is applied
@@ -128,24 +142,10 @@ function showResults(results) {
    //clear any existing graphics
    map.graphics.clear();
    map.centerAndZoom(result.feature.geometry, 5);
-   //close the dialog
+//close the dialog
    $('#searchDialog').dialog('close');
  }
 
-//Zoom to the parcel when the user clicks a row
-function onRowClickHandler(evt) {
-    var clickedTrafficCountId = grid.getItem(evt.rowIndex).OBJECTID;
-    var selectedTrafficCount;
-
-    dojo.forEach(map.graphics.graphics, function (graphic) {
-        if ((graphic.attributes) && graphic.attributes.OBJECTID === clickedTrafficCountId) {
-            selectedTrafficCount = graphic;
-            return;
-        }
-    });
-    map.centerAndZoom(selectedTrafficCount.geometry, 5);
-}
-//use the geolocation api to get the current location
 function getLocation() {
     if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(zoomToLocation, locationError);

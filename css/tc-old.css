@@ -1,27 +1,27 @@
 /*@-webkit-keyframes pulse {
     0% {
         opacity: 1.0;
-        -webkit-transform: scale(1.0);
+        -webkit-transform: scale(1.25);
     }
 
     45% {
         opacity: .20;
-        -webkit-transform: scale(1.0);
+        -webkit-transform: scale(.80);
     }
 
     100% {
         opacity: 1.0;
-        -webkit-transform: scale(1.0);
+        -webkit-transform: scale(1.25);
     }
 }
 
 #map_graphics_layer {
-    -webkit-animation-duration: 6s;
+    -webkit-animation-duration: 3s;
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-name: pulse;
     -webkit-animation-timing-function: ease-in-out;
-}*/
-
+}
+*/
 #map {
     height: 100%;
     width: 100%;
@@ -64,6 +64,14 @@
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#0A4D6A',\A       endColorstr='#639BBC')";
 }
 
+/*.esriPopupMobile .pointer.top {
+    background: url(http://maps.indiana.edu/images/indianaMap/mobile/pointertop.png);
+}
+
+.esriPopupMobile .pointer.bottom {
+    background: url(http://maps.indiana.edu/images/indianaMap/mobile/pointerbottom.png);
+}*/
+
 .customIcons .ui-btn .ui-btn-inner {
     padding-top: 40px!important;
 }
@@ -78,6 +86,13 @@
     -webkit-border-radius: none!important;
     border-radius: none!important;
 }
+
+/*
+      #info .ui-icon {
+        background:url(http://maps.indiana.edu/images/indianaMap/mobile/info.png) 50% 50% no-repeat;
+        background-size:32px 32px;
+      }
+      */
 
 #geolocate .ui-icon {
     background: url('../img/geolocate.png') 50% 50% no-repeat;
@@ -104,6 +119,34 @@
     background: url('../img/search.png') 50% 50% no-repeat;
     background-size: 32px 32px;
 }
+
+/*.esriMobilePopupInfoView {
+    overflow: auto;
+}*/
+
+/*.map .logo-med {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 100px;
+    height: 36px;
+    z-index: 49;
+    background-image: url('') no-repeat;
+    cursor: pointer;
+    _background-image: none;
+}*/
+
+/*.map .logo-sm {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 60px;
+    height: 16px;
+    z-index: 49;
+    background-image: url('') no-repeat;
+    cursor: pointer;
+    _background-image: none;
+}*/
 
 .esriSimpleSlider div {
     height: 30px !important;
