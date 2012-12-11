@@ -11,36 +11,23 @@
   <meta name="MobileOptimized" content="320"> 
   <link rel="stylesheet" href="css/tc.css" />
   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
-  <link rel="stylesheet" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/esri/dijit/css/Popup.css"/>
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css"/>
   <script src="js/libs/modernizr-2.0.6.min.js"></script>
 </head>
   <body onorientationchange="orientationChanged();">
     <div data-role="page" id="mapPage" class="page-map">
-      <div id="header" data-role="header">
-        <h1><span id="webmapTitle">OKI Traffic Counts</span></h1>
-        <a id="geolocate" data-icon="custom" href="#" onclick="getLocation();" class="ui-btn-left" data-iconpos="notext" title="Locate"></a>
-        <a id="info" data-icon="info" href="#infoDialog" data-rel="dialog" class="ui-btn-right" data-iconpos="notext"></a>
+      <div data-role="header" data-theme="" class="header">
+        <a data-role="button" id="searchMap" data-icon="info" href="#infoDialog" data-rel="dialog" >Info</a>
+        <h1>OKI Traffic Counts</h1>
+        <div data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+          <!-- <a data-role="button" href="#searchDialog" title="Search" class="ui-btn-right" id="searchMap"></a> -->
+          <a data-role="button" id="searchMap" data-icon="search" href="#searchDialog" data-rel="dialog" >Search</a>
+          <a data-role="button" id="geolocate" data-icon="Locate" href="#" onclick="getLocation();" data-rel="dialog">Locate</a>
+        </div>
       </div>
+
       <div data-role="content" id="mapcontent">
         <div id="map"></div>
-      </div>
-      <!--Navbar-->
-      <div id="footer" data-role="footer">
-        <div data-role="navbar" class="customIcons">
-          <ul>
-            <li>
-              <a id="legend" data-icon="custom"  href="#legendDialog" data-rel="dialog">Legend</a>
-              <!-- <a id="layers" data-icon="custom"  href="#layerDialog" data-rel="page">Layers</a> -->
-            </li>
-            <li>
-            </li>
-            <li>
-            </li>
-            <li>
-              <a id="searchMap" data-icon="custom" href="#searchDialog" data-rel="dialog">Search</a>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
     <!--Search Dialog-->
@@ -84,7 +71,7 @@
   <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
   <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
   <script src="js/libs/jqm.autoComplete-1.4.3-min.js"></script>
-  <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.1compact"></script>
+  <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2compact"></script>
   <script src="js/app.js"></script>
   <script type="text/javascript">
       dojoConfig = {
@@ -96,7 +83,7 @@
 
     $("#searchDialog").bind("pageshow", function(e) {
 
-      var availableTags = ['24', 'about me', 'Adobe', 'AIR', 'AJAX', 'Android', 'Apple', 'Aptana', 'autoComplete', 'Bflex-BFusion', 'Blackberry Playbook', 'Blog Housekeeping', 'c25k', 'CFConversations', 'CFinNC', 'cfObjective', 'CFUnited', 'Clients', 'ColdFusion', 'ColdFusion Builder', 'Cooking and Recipes', 'CSS', 'D2WC', 'dribbbleCFC', 'Eclipse', 'Ember.js', 'Emile', 'ExtendScript', 'Family', 'Fireworks', 'Flash', 'Flex', 'foursquareCFC', 'From a former designer', 'Giveaways', 'Goba', 'Hardware', 'Illustrator', 'instagramCFC', 'iPhone', 'JavaScript', 'job openings', 'jobs', 'jQuery', 'jQuery Mobile', 'jQuery Mobile Boilerplate', 'kloutCFC', 'Lost', 'MAX', 'mobile', 'Movies and Reviews', 'ncfug', 'openExchangeRateCFC', 'Palm Pre', 'pastebinCFC', 'PhoneGap', 'Photoshop', 'picasaCFC', 'podcast', 'presentations', 'projects', 'reading', 'regular expressions', 'RIAUnleashed', 'Shrinkadoo', 'shrinkURL', 'SQL', 'swipeButton', 'technology', 'textCounter', 'the internet', 'ThemeRoller', 'tumblrCFC', 'Undelivrnator', 'video', 'Wallpapers', 'web development', 'Whiskerino', 'XCode and Interface Builder', 'XUIJS'];
+      var availableTags = ['', '', ''];
 
       $("#streetName").autocomplete({
         target: $('#suggestions'),

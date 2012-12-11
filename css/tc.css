@@ -1,34 +1,10 @@
-/*@-webkit-keyframes pulse {
-    0% {
-        opacity: 1.0;
-        -webkit-transform: scale(1.0);
-    }
-
-    45% {
-        opacity: .20;
-        -webkit-transform: scale(1.0);
-    }
-
-    100% {
-        opacity: 1.0;
-        -webkit-transform: scale(1.0);
-    }
-}
-
-#map_graphics_layer {
-    -webkit-animation-duration: 6s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-name: pulse;
-    -webkit-animation-timing-function: ease-in-out;
-}*/
-
 #map {
     height: 100%;
     width: 100%;
     overflow: hidden;
 }
 .page-map, #mapcontent.ui-content {
-    height: 80%;
+    height: 94%;
     width: 100%;
     padding: 0;
     overflow: hidden;
@@ -62,47 +38,6 @@
     background: rgba(69, 72, 77, 1);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0A4D6A',endColorstr='#639BBC');
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#0A4D6A',\A       endColorstr='#639BBC')";
-}
-
-.customIcons .ui-btn .ui-btn-inner {
-    padding-top: 40px!important;
-}
-
-.customIcons .ui-btn .ui-icon {
-    width: 32px!important;
-    height: 32px!important;
-    margin-left: -15px!important;
-    box-shadow: none!important;
-    -moz-box-shadow: none!important;
-    -webkit-box-shadow: none!important;
-    -webkit-border-radius: none!important;
-    border-radius: none!important;
-}
-
-#geolocate .ui-icon {
-    background: url('../img/geolocate.png') 50% 50% no-repeat;
-    background-size: 32px 32px;
-}
-
-#layers .ui-icon {
-    background: url('../img/legend.png') 50% 50% no-repeat;
-    background-size: 32px 32px;
-}
-
-#legend .ui-icon {
-    background: url('../img/mapDetails.png') 50% 50% no-repeat;
-    background-size: 32px 32px;
-}
-
-
-#details .ui-icon {
-    background: url('../img/BasemapLayer.png') 50% 50% no-repeat;
-    background-size: 32px 32px;
-}
-
-#searchMap .ui-icon {
-    background: url('../img/search.png') 50% 50% no-repeat;
-    background-size: 32px 32px;
 }
 
 .esriSimpleSlider div {

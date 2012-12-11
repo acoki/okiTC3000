@@ -35,22 +35,22 @@ function init() {
     map.addLayer(streetMapLayer);
     //define a popup template
     var popupTemplate = new esri.dijit.PopupTemplate({
-        title: "{OKIID}",
+        title: "",
         fieldInfos: [
         {fieldName: "Main_Street", visible: true, label:"MainStreet"},
         {fieldName: "Cross_Street", visible:true, label:"CrossStreet"},
-        // {fieldName: "AADT_", visible: true, label:"AADT", format: {places: 0,digitSeparator: true}},
-        // {fieldName: "Year_", visible: true, label:"Year"},
-        {fieldName: "CountYear2000", visible: true, label:"2000", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2003", visible: true, label:"2003", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2004", visible: true, label:"2004", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2005", visible: true, label:"2005", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2006", visible: true, label:"2006", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2007", visible: true, label:"2007", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2008", visible: true, label:"2008", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2009", visible: true, label:"2009", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2010", visible: true, label:"2010", format: {places: 0,digitSeparator: true}},
-        {fieldName: "CountYear2011", visible: true, label:"2011", format: {places: 0,digitSeparator: true}}
+        {fieldName: "AADT_", visible: true, label:"AADT", format: {places: 0,digitSeparator: true}},
+        {fieldName: "Year_", visible: true, label:"Year"}
+        // {fieldName: "CountYear2000", visible: true, label:"2000", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2003", visible: true, label:"2003", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2004", visible: true, label:"2004", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2005", visible: true, label:"2005", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2006", visible: true, label:"2006", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2007", visible: true, label:"2007", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2008", visible: true, label:"2008", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2009", visible: true, label:"2009", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2010", visible: true, label:"2010", format: {places: 0,digitSeparator: true}},
+        // {fieldName: "CountYear2011", visible: true, label:"2011", format: {places: 0,digitSeparator: true}}
         ],
         // mediaInfos: [{
         //     type: "linechart",
